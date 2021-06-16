@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Admin Or.Weather | Đăng nhập Admin</title>
+    <title>Đăng nhập | Admin Or.Weather</title>
     <meta name="description" content="Đăng nhập Admin">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -37,10 +37,11 @@
                     <h2 class="h2-login">Đăng nhập ADMIN</h2> 
                 </div>
                 <div class="login-form">
-                    <form>
+                    <form action="{{ route('post.login') }}" method="POST">
+                        @csrf
                         <div class="form-group">
                             <label>Tài khoản</label>
-                            <input type="text" class="form-control" name="username" placeholder="Nhập tài khoản ở đây ...">
+                            <input type="text" class="form-control" name="account" placeholder="Nhập tài khoản ở đây ...">
                         </div>
                             <div class="form-group">
                                 <label>Mật khẩu</label>
@@ -56,6 +57,15 @@
 
                             </div>
                             <button type="submit" class="btn btn-success btn-flat m-b-30 m-t-30">Đăng nhập</button>
+                            <br>    
+                            <?php
+                            $message = Session::get('message');
+                            if($message)
+                            {
+                                echo $message;
+                                Session::put('message', null);
+                            }
+                            ?>
                     </form>
                 </div>
             </div>

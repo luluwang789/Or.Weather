@@ -52,7 +52,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 
 					<h3>Nhiệt độ hiện tại</h3>
 
-					<h4>{{ $current_default->temp_c }}<span>°c</span></h4>
+					<h4>{{ $current_default->temp_c }}<span>°C</span></h4>
 					@endif
 				</div>
 				<div class="w3layouts_main_grid_right">
@@ -134,222 +134,18 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 							</ul>
 							<div class="resp-tabs-container hor_1">
 								<div class="w3_agileits_tabs"> 
+									@foreach ($forecast_hour as $hour)
 									<div class="w3_main_grid_right_grid1">
 										<div class="w3_main_grid_right_grid1_left">
-											<p>00:00 AM</p>
+											<p>{{ $hour->time }}</p>
 										</div>
 										<div class="w3_main_grid_right_grid1_right">
-											<p>15<i>°c</i><span>Cloudy</span></p>
+											<p>{{ $hour->temp_c }}<i>°c</i><span>{{ $hour->condition_text }}</span></p>
 										</div>
 										<div class="clear"> </div>
 									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>01:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>16<i>°c</i><span>Clear</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>02:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>18<i>°c</i><span>Cear</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>03:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>04:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>05:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>06:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>07:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>08:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>09:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>10:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>11:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>12:00 AM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>01:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>02:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>03:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>04:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>05:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>06:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>07:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>08:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>09:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>10:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
-									<div class="w3_main_grid_right_grid1">
-										<div class="w3_main_grid_right_grid1_left">
-											<p>11:00 PM</p>
-										</div>
-										<div class="w3_main_grid_right_grid1_right">
-											<p>12<i>°c</i><span>Partly Cloudy</span></p>
-										</div>
-										<div class="clear"> </div>
-									</div>
+									@endforeach
+									
 								</div>
 								{{-- <div class="w3_agileits_tabs">
 									<div class="w3_main_grid_right_grid1">

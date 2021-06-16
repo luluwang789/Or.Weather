@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Redirect;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use GuzzleHttp\Client;
+use App\Models\ForecastDay;
 use App\Models\Location;
 use App\Models\Current;
-use App\Models\ForecastDay;
+use GuzzleHttp\Client;
+use App\Models\Admin;
 use App\Models\Hour;
+use Session;
+use Auth;
+use Hash;
 use DB;
 
 class DashboardAdminController extends Controller
@@ -18,9 +23,44 @@ class DashboardAdminController extends Controller
         return view('admin.login.login');
     }
 
+    public function post_login(Request $request)
+    {
+        $arr = [
+            'account' => $request->account,
+            'password' => $request->password,
+        ];
+        // dd($arr);
+        if(Auth::guard('admin')->attempt($arr))
+        {
+            return redirect('/admin');
+        }
+        else
+        {
+            return redirect('/admin/login')->with('message', '<p style="color:red;">Đăng nhập không thành công, vui lòng kiểm tra lại tài khoản và mật khẩu!</p>');
+        }
+    }
+
+    public function logout()
+    {
+        Auth::guard('admin')->logout();
+        return redirect('/admin/login');
+    }
+
     public function index()
     {
-        return view('admin.page.dashboard');
+        // dd(Auth::check());
+        if(Auth::guard('admin')->check())
+        {
+            $id = Auth::guard('admin')->id();
+            $name = Auth::guard('admin')->user()->name;
+            $location = Location::orderBy('name', 'ASC')->get();
+            Session::put('title', 'Trang điều khiểng');  //  link title
+            return view('admin.page.dashboard', compact(['id', 'name', 'location']));
+        }
+        else
+        {
+            return redirect('/admin/login')->with('message', '<p style="color:red;">Bạn chưa đăng nhập</p>');
+        }
     }
 
     public function search(Request $request)
@@ -75,82 +115,169 @@ class DashboardAdminController extends Controller
             $weather_current->gust_kph = $data_json->current->gust_kph;
     
             $weather_current->save();
-
-            // forecast
-            $weather_forecast = new ForecastDay();
-            // save here
-            $weather_forecast->name_city = $data_json->location->name;
-            $weather_forecast->date = $data_json->forecast->forecastday[0]->date;
-            $weather_forecast->day_maxtemp_c = $data_json->forecast->forecastday[0]->day->maxtemp_c;
-            $weather_forecast->day_maxtemp_f = $data_json->forecast->forecastday[0]->day->maxtemp_f;
-            $weather_forecast->day_mintemp_c = $data_json->forecast->forecastday[0]->day->mintemp_c;
-            $weather_forecast->day_mintemp_f = $data_json->forecast->forecastday[0]->day->mintemp_f;
-            $weather_forecast->day_avgtemp_c = $data_json->forecast->forecastday[0]->day->avgtemp_c;
-            $weather_forecast->day_avgtemp_f = $data_json->forecast->forecastday[0]->day->avgtemp_f;
-            $weather_forecast->day_maxwind_mph = $data_json->forecast->forecastday[0]->day->maxwind_mph;
-            $weather_forecast->day_maxwind_kph = $data_json->forecast->forecastday[0]->day->maxwind_kph;
-            $weather_forecast->day_totalprecip_mm = $data_json->forecast->forecastday[0]->day->totalprecip_mm;
-            $weather_forecast->day_totalprecip_in = $data_json->forecast->forecastday[0]->day->totalprecip_in;
-            $weather_forecast->day_avgvis_km = $data_json->forecast->forecastday[0]->day->avgvis_km;
-            $weather_forecast->day_avgvis_miles = $data_json->forecast->forecastday[0]->day->avgvis_miles;
-            $weather_forecast->day_avghumidity = $data_json->forecast->forecastday[0]->day->avghumidity;
-            $weather_forecast->day_daily_will_it_rain = $data_json->forecast->forecastday[0]->day->daily_will_it_rain;
-            $weather_forecast->day_daily_chance_of_rain = $data_json->forecast->forecastday[0]->day->daily_chance_of_rain;
-            $weather_forecast->day_daily_will_it_snow = $data_json->forecast->forecastday[0]->day->daily_will_it_snow;
-            $weather_forecast->day_daily_chance_of_snow = $data_json->forecast->forecastday[0]->day->daily_chance_of_snow;
-            $weather_forecast->day_condition_text = $data_json->forecast->forecastday[0]->day->condition->text;
-            $weather_forecast->day_condition_icon = $data_json->forecast->forecastday[0]->day->condition->icon;
-            $weather_forecast->day_condition_code = $data_json->forecast->forecastday[0]->day->condition->code;
-            $weather_forecast->day_uv = $data_json->forecast->forecastday[0]->day->uv;
-
-            $weather_forecast->save();
-
-            // save here
-            $id_forecast = ForecastDay::where('date', $data_json->forecast->forecastday[0]->date)->orderBy('id', 'DESC')->first('id');
-
-            $i = 0;
-            foreach($data_json->forecast->forecastday[0]->hour as $hour)
+            // check forecastDay
+            $check_update = ForecastDay::where([['date', $data_json->forecast->forecastday[0]->date],['name_city',$data_json->location->name]])->first();
+            // dd($check_update->id);
+            // chưa có
+            if($check_update == null)
             {
-                $weather_forecast_hour = new Hour();
+                // forecast
+                $weather_forecast = new ForecastDay();
+                // save here
+                $weather_forecast->name_city = $data_json->location->name;
+                $weather_forecast->date = $data_json->forecast->forecastday[0]->date;
+                $weather_forecast->day_maxtemp_c = $data_json->forecast->forecastday[0]->day->maxtemp_c;
+                $weather_forecast->day_maxtemp_f = $data_json->forecast->forecastday[0]->day->maxtemp_f;
+                $weather_forecast->day_mintemp_c = $data_json->forecast->forecastday[0]->day->mintemp_c;
+                $weather_forecast->day_mintemp_f = $data_json->forecast->forecastday[0]->day->mintemp_f;
+                $weather_forecast->day_avgtemp_c = $data_json->forecast->forecastday[0]->day->avgtemp_c;
+                $weather_forecast->day_avgtemp_f = $data_json->forecast->forecastday[0]->day->avgtemp_f;
+                $weather_forecast->day_maxwind_mph = $data_json->forecast->forecastday[0]->day->maxwind_mph;
+                $weather_forecast->day_maxwind_kph = $data_json->forecast->forecastday[0]->day->maxwind_kph;
+                $weather_forecast->day_totalprecip_mm = $data_json->forecast->forecastday[0]->day->totalprecip_mm;
+                $weather_forecast->day_totalprecip_in = $data_json->forecast->forecastday[0]->day->totalprecip_in;
+                $weather_forecast->day_avgvis_km = $data_json->forecast->forecastday[0]->day->avgvis_km;
+                $weather_forecast->day_avgvis_miles = $data_json->forecast->forecastday[0]->day->avgvis_miles;
+                $weather_forecast->day_avghumidity = $data_json->forecast->forecastday[0]->day->avghumidity;
+                $weather_forecast->day_daily_will_it_rain = $data_json->forecast->forecastday[0]->day->daily_will_it_rain;
+                $weather_forecast->day_daily_chance_of_rain = $data_json->forecast->forecastday[0]->day->daily_chance_of_rain;
+                $weather_forecast->day_daily_will_it_snow = $data_json->forecast->forecastday[0]->day->daily_will_it_snow;
+                $weather_forecast->day_daily_chance_of_snow = $data_json->forecast->forecastday[0]->day->daily_chance_of_snow;
+                $weather_forecast->day_condition_text = $data_json->forecast->forecastday[0]->day->condition->text;
+                $weather_forecast->day_condition_icon = $data_json->forecast->forecastday[0]->day->condition->icon;
+                $weather_forecast->day_condition_code = $data_json->forecast->forecastday[0]->day->condition->code;
+                $weather_forecast->day_uv = $data_json->forecast->forecastday[0]->day->uv;
 
-                $weather_forecast_hour->id_forecast = $id_forecast->id;
-                $weather_forecast_hour->time = $data_json->forecast->forecastday[0]->hour[$i]->time ;
-                $weather_forecast_hour->temp_c = $data_json->forecast->forecastday[0]->hour[$i]->temp_c ;
-                $weather_forecast_hour->temp_f = $data_json->forecast->forecastday[0]->hour[$i]->temp_f ;
-                $weather_forecast_hour->is_day = $data_json->forecast->forecastday[0]->hour[$i]->is_day ;
-                $weather_forecast_hour->condition_text = $data_json->forecast->forecastday[0]->hour[$i]->condition->text ;
-                $weather_forecast_hour->condition_icon = $data_json->forecast->forecastday[0]->hour[$i]->condition->icon ;
-                $weather_forecast_hour->condition_code = $data_json->forecast->forecastday[0]->hour[$i]->condition->code ;
-                $weather_forecast_hour->wind_mph = $data_json->forecast->forecastday[0]->hour[$i]->wind_mph ;
-                $weather_forecast_hour->wind_kph = $data_json->forecast->forecastday[0]->hour[$i]->wind_kph ;
-                $weather_forecast_hour->wind_degree = $data_json->forecast->forecastday[0]->hour[$i]->wind_degree ;
-                $weather_forecast_hour->wind_dir = $data_json->forecast->forecastday[0]->hour[$i]->wind_dir ;
-                $weather_forecast_hour->pressure_mb = $data_json->forecast->forecastday[0]->hour[$i]->pressure_mb ;
-                $weather_forecast_hour->pressure_in = $data_json->forecast->forecastday[0]->hour[$i]->pressure_in ;
-                $weather_forecast_hour->precip_mm= $data_json->forecast->forecastday[0]->hour[$i]->precip_mm ;
-                $weather_forecast_hour->precip_in = $data_json->forecast->forecastday[0]->hour[$i]->precip_in ;
-                $weather_forecast_hour->humidity = $data_json->forecast->forecastday[0]->hour[$i]->humidity ;
-                $weather_forecast_hour->cloud = $data_json->forecast->forecastday[0]->hour[$i]->cloud ;
-                $weather_forecast_hour->feelslike_c = $data_json->forecast->forecastday[0]->hour[$i]->feelslike_c ;
-                $weather_forecast_hour->feelslike_f = $data_json->forecast->forecastday[0]->hour[$i]->feelslike_f ;
-                $weather_forecast_hour->windchill_c = $data_json->forecast->forecastday[0]->hour[$i]->windchill_c ;
-                $weather_forecast_hour->windchill_f = $data_json->forecast->forecastday[0]->hour[$i]->windchill_f ;
-                $weather_forecast_hour->heatindex_c = $data_json->forecast->forecastday[0]->hour[$i]->heatindex_c ;
-                $weather_forecast_hour->heatindex_f = $data_json->forecast->forecastday[0]->hour[$i]->heatindex_f ;
-                $weather_forecast_hour->dewpoint_c = $data_json->forecast->forecastday[0]->hour[$i]->dewpoint_c ;
-                $weather_forecast_hour->dewpoint_f = $data_json->forecast->forecastday[0]->hour[$i]->dewpoint_f ;
-                $weather_forecast_hour->will_it_rain = $data_json->forecast->forecastday[0]->hour[$i]->will_it_rain ;
-                $weather_forecast_hour->chance_of_rain = $data_json->forecast->forecastday[0]->hour[$i]->chance_of_rain ;
-                $weather_forecast_hour->will_it_snow = $data_json->forecast->forecastday[0]->hour[$i]->will_it_snow ;
-                $weather_forecast_hour->chance_of_snow = $data_json->forecast->forecastday[0]->hour[$i]->chance_of_snow ;
-                $weather_forecast_hour->vis_km = $data_json->forecast->forecastday[0]->hour[$i]->vis_km ;
-                $weather_forecast_hour->vis_miles = $data_json->forecast->forecastday[0]->hour[$i]->vis_miles ;
-                $weather_forecast_hour->gust_mph = $data_json->forecast->forecastday[0]->hour[$i]->gust_mph ;
-                $weather_forecast_hour->gust_kph = $data_json->forecast->forecastday[0]->hour[$i]->gust_kph ;
-                $weather_forecast_hour->uv = $data_json->forecast->forecastday[0]->hour[$i]->uv ;
+                $weather_forecast->save();
+
+                // hour
+                // save here
+                $id_forecast = ForecastDay::where('date', $data_json->forecast->forecastday[0]->date)->orderBy('id', 'DESC')->first('id');
+
+                $i = 0;
+                foreach($data_json->forecast->forecastday[0]->hour as $hour)
+                {
+                    $weather_forecast_hour = new Hour();
+
+                    $weather_forecast_hour->id_forecast = $id_forecast->id;
+                    $weather_forecast_hour->time = $data_json->forecast->forecastday[0]->hour[$i]->time ;
+                    $weather_forecast_hour->temp_c = $data_json->forecast->forecastday[0]->hour[$i]->temp_c ;
+                    $weather_forecast_hour->temp_f = $data_json->forecast->forecastday[0]->hour[$i]->temp_f ;
+                    $weather_forecast_hour->is_day = $data_json->forecast->forecastday[0]->hour[$i]->is_day ;
+                    $weather_forecast_hour->condition_text = $data_json->forecast->forecastday[0]->hour[$i]->condition->text ;
+                    $weather_forecast_hour->condition_icon = $data_json->forecast->forecastday[0]->hour[$i]->condition->icon ;
+                    $weather_forecast_hour->condition_code = $data_json->forecast->forecastday[0]->hour[$i]->condition->code ;
+                    $weather_forecast_hour->wind_mph = $data_json->forecast->forecastday[0]->hour[$i]->wind_mph ;
+                    $weather_forecast_hour->wind_kph = $data_json->forecast->forecastday[0]->hour[$i]->wind_kph ;
+                    $weather_forecast_hour->wind_degree = $data_json->forecast->forecastday[0]->hour[$i]->wind_degree ;
+                    $weather_forecast_hour->wind_dir = $data_json->forecast->forecastday[0]->hour[$i]->wind_dir ;
+                    $weather_forecast_hour->pressure_mb = $data_json->forecast->forecastday[0]->hour[$i]->pressure_mb ;
+                    $weather_forecast_hour->pressure_in = $data_json->forecast->forecastday[0]->hour[$i]->pressure_in ;
+                    $weather_forecast_hour->precip_mm= $data_json->forecast->forecastday[0]->hour[$i]->precip_mm ;
+                    $weather_forecast_hour->precip_in = $data_json->forecast->forecastday[0]->hour[$i]->precip_in ;
+                    $weather_forecast_hour->humidity = $data_json->forecast->forecastday[0]->hour[$i]->humidity ;
+                    $weather_forecast_hour->cloud = $data_json->forecast->forecastday[0]->hour[$i]->cloud ;
+                    $weather_forecast_hour->feelslike_c = $data_json->forecast->forecastday[0]->hour[$i]->feelslike_c ;
+                    $weather_forecast_hour->feelslike_f = $data_json->forecast->forecastday[0]->hour[$i]->feelslike_f ;
+                    $weather_forecast_hour->windchill_c = $data_json->forecast->forecastday[0]->hour[$i]->windchill_c ;
+                    $weather_forecast_hour->windchill_f = $data_json->forecast->forecastday[0]->hour[$i]->windchill_f ;
+                    $weather_forecast_hour->heatindex_c = $data_json->forecast->forecastday[0]->hour[$i]->heatindex_c ;
+                    $weather_forecast_hour->heatindex_f = $data_json->forecast->forecastday[0]->hour[$i]->heatindex_f ;
+                    $weather_forecast_hour->dewpoint_c = $data_json->forecast->forecastday[0]->hour[$i]->dewpoint_c ;
+                    $weather_forecast_hour->dewpoint_f = $data_json->forecast->forecastday[0]->hour[$i]->dewpoint_f ;
+                    $weather_forecast_hour->will_it_rain = $data_json->forecast->forecastday[0]->hour[$i]->will_it_rain ;
+                    $weather_forecast_hour->chance_of_rain = $data_json->forecast->forecastday[0]->hour[$i]->chance_of_rain ;
+                    $weather_forecast_hour->will_it_snow = $data_json->forecast->forecastday[0]->hour[$i]->will_it_snow ;
+                    $weather_forecast_hour->chance_of_snow = $data_json->forecast->forecastday[0]->hour[$i]->chance_of_snow ;
+                    $weather_forecast_hour->vis_km = $data_json->forecast->forecastday[0]->hour[$i]->vis_km ;
+                    $weather_forecast_hour->vis_miles = $data_json->forecast->forecastday[0]->hour[$i]->vis_miles ;
+                    $weather_forecast_hour->gust_mph = $data_json->forecast->forecastday[0]->hour[$i]->gust_mph ;
+                    $weather_forecast_hour->gust_kph = $data_json->forecast->forecastday[0]->hour[$i]->gust_kph ;
+                    $weather_forecast_hour->uv = $data_json->forecast->forecastday[0]->hour[$i]->uv ;
+                    
+                    $weather_forecast_hour->save();
+                    $i++;
+                }
+            }
+            else // có rồi - update
+            {
+                // forecast
+                $weather_forecast = ForecastDay::find($check_update->id);
+                // save here
+                $weather_forecast->name_city = $data_json->location->name;
+                $weather_forecast->date = $data_json->forecast->forecastday[0]->date;
+                $weather_forecast->day_maxtemp_c = $data_json->forecast->forecastday[0]->day->maxtemp_c;
+                $weather_forecast->day_maxtemp_f = $data_json->forecast->forecastday[0]->day->maxtemp_f;
+                $weather_forecast->day_mintemp_c = $data_json->forecast->forecastday[0]->day->mintemp_c;
+                $weather_forecast->day_mintemp_f = $data_json->forecast->forecastday[0]->day->mintemp_f;
+                $weather_forecast->day_avgtemp_c = $data_json->forecast->forecastday[0]->day->avgtemp_c;
+                $weather_forecast->day_avgtemp_f = $data_json->forecast->forecastday[0]->day->avgtemp_f;
+                $weather_forecast->day_maxwind_mph = $data_json->forecast->forecastday[0]->day->maxwind_mph;
+                $weather_forecast->day_maxwind_kph = $data_json->forecast->forecastday[0]->day->maxwind_kph;
+                $weather_forecast->day_totalprecip_mm = $data_json->forecast->forecastday[0]->day->totalprecip_mm;
+                $weather_forecast->day_totalprecip_in = $data_json->forecast->forecastday[0]->day->totalprecip_in;
+                $weather_forecast->day_avgvis_km = $data_json->forecast->forecastday[0]->day->avgvis_km;
+                $weather_forecast->day_avgvis_miles = $data_json->forecast->forecastday[0]->day->avgvis_miles;
+                $weather_forecast->day_avghumidity = $data_json->forecast->forecastday[0]->day->avghumidity;
+                $weather_forecast->day_daily_will_it_rain = $data_json->forecast->forecastday[0]->day->daily_will_it_rain;
+                $weather_forecast->day_daily_chance_of_rain = $data_json->forecast->forecastday[0]->day->daily_chance_of_rain;
+                $weather_forecast->day_daily_will_it_snow = $data_json->forecast->forecastday[0]->day->daily_will_it_snow;
+                $weather_forecast->day_daily_chance_of_snow = $data_json->forecast->forecastday[0]->day->daily_chance_of_snow;
+                $weather_forecast->day_condition_text = $data_json->forecast->forecastday[0]->day->condition->text;
+                $weather_forecast->day_condition_icon = $data_json->forecast->forecastday[0]->day->condition->icon;
+                $weather_forecast->day_condition_code = $data_json->forecast->forecastday[0]->day->condition->code;
+                $weather_forecast->day_uv = $data_json->forecast->forecastday[0]->day->uv;
+
+                $weather_forecast->save();
                 
-                $weather_forecast_hour->save();
-                $i++;
+                // hour
+                // save here
+                $id_forecast = ForecastDay::where('date', $data_json->forecast->forecastday[0]->date)->orderBy('id', 'DESC')->first('id');
+
+                $i = 0;
+                foreach($data_json->forecast->forecastday[0]->hour as $hour)
+                {
+                    $check_hour = Hour::where([['id_forecast', $id_forecast->id],['time', $data_json->forecast->forecastday[0]->hour[$i]->time]])->first();
+                    
+                    $weather_forecast_hour = Hour::find($check_hour->id);
+
+                    $weather_forecast_hour->temp_c = $data_json->forecast->forecastday[0]->hour[$i]->temp_c ;
+                    $weather_forecast_hour->temp_f = $data_json->forecast->forecastday[0]->hour[$i]->temp_f ;
+                    $weather_forecast_hour->is_day = $data_json->forecast->forecastday[0]->hour[$i]->is_day ;
+                    $weather_forecast_hour->condition_text = $data_json->forecast->forecastday[0]->hour[$i]->condition->text ;
+                    $weather_forecast_hour->condition_icon = $data_json->forecast->forecastday[0]->hour[$i]->condition->icon ;
+                    $weather_forecast_hour->condition_code = $data_json->forecast->forecastday[0]->hour[$i]->condition->code ;
+                    $weather_forecast_hour->wind_mph = $data_json->forecast->forecastday[0]->hour[$i]->wind_mph ;
+                    $weather_forecast_hour->wind_kph = $data_json->forecast->forecastday[0]->hour[$i]->wind_kph ;
+                    $weather_forecast_hour->wind_degree = $data_json->forecast->forecastday[0]->hour[$i]->wind_degree ;
+                    $weather_forecast_hour->wind_dir = $data_json->forecast->forecastday[0]->hour[$i]->wind_dir ;
+                    $weather_forecast_hour->pressure_mb = $data_json->forecast->forecastday[0]->hour[$i]->pressure_mb ;
+                    $weather_forecast_hour->pressure_in = $data_json->forecast->forecastday[0]->hour[$i]->pressure_in ;
+                    $weather_forecast_hour->precip_mm= $data_json->forecast->forecastday[0]->hour[$i]->precip_mm ;
+                    $weather_forecast_hour->precip_in = $data_json->forecast->forecastday[0]->hour[$i]->precip_in ;
+                    $weather_forecast_hour->humidity = $data_json->forecast->forecastday[0]->hour[$i]->humidity ;
+                    $weather_forecast_hour->cloud = $data_json->forecast->forecastday[0]->hour[$i]->cloud ;
+                    $weather_forecast_hour->feelslike_c = $data_json->forecast->forecastday[0]->hour[$i]->feelslike_c ;
+                    $weather_forecast_hour->feelslike_f = $data_json->forecast->forecastday[0]->hour[$i]->feelslike_f ;
+                    $weather_forecast_hour->windchill_c = $data_json->forecast->forecastday[0]->hour[$i]->windchill_c ;
+                    $weather_forecast_hour->windchill_f = $data_json->forecast->forecastday[0]->hour[$i]->windchill_f ;
+                    $weather_forecast_hour->heatindex_c = $data_json->forecast->forecastday[0]->hour[$i]->heatindex_c ;
+                    $weather_forecast_hour->heatindex_f = $data_json->forecast->forecastday[0]->hour[$i]->heatindex_f ;
+                    $weather_forecast_hour->dewpoint_c = $data_json->forecast->forecastday[0]->hour[$i]->dewpoint_c ;
+                    $weather_forecast_hour->dewpoint_f = $data_json->forecast->forecastday[0]->hour[$i]->dewpoint_f ;
+                    $weather_forecast_hour->will_it_rain = $data_json->forecast->forecastday[0]->hour[$i]->will_it_rain ;
+                    $weather_forecast_hour->chance_of_rain = $data_json->forecast->forecastday[0]->hour[$i]->chance_of_rain ;
+                    $weather_forecast_hour->will_it_snow = $data_json->forecast->forecastday[0]->hour[$i]->will_it_snow ;
+                    $weather_forecast_hour->chance_of_snow = $data_json->forecast->forecastday[0]->hour[$i]->chance_of_snow ;
+                    $weather_forecast_hour->vis_km = $data_json->forecast->forecastday[0]->hour[$i]->vis_km ;
+                    $weather_forecast_hour->vis_miles = $data_json->forecast->forecastday[0]->hour[$i]->vis_miles ;
+                    $weather_forecast_hour->gust_mph = $data_json->forecast->forecastday[0]->hour[$i]->gust_mph ;
+                    $weather_forecast_hour->gust_kph = $data_json->forecast->forecastday[0]->hour[$i]->gust_kph ;
+                    $weather_forecast_hour->uv = $data_json->forecast->forecastday[0]->hour[$i]->uv ;
+                    
+                    $weather_forecast_hour->save();
+                    $i++;
+                }
             }
         }
 
