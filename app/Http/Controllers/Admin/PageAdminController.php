@@ -112,32 +112,30 @@ class PageAdminController extends Controller
         ');
     }
 
-    // map
-    public function map($option, $city, $date)
+    // map hour
+    public function map_hour($city, $date)
     {
-        if($option == 'hour')
-        {
-            $time_weather = DB::table('forecast_days')
-                                ->join('hours', 'forecast_days.id', '=', 'hours.id_forecast')
-                                ->select('forecast_days.name_city', 'forecast_days.date', 'hours.*')
-                                ->where([['forecast_days.name_city', $city],['forecast_days.date', $date]])
-                                ->orderBy('hours.id_forecast', 'DESC')
-                                ->orderBy('hours.id', 'ASC')
-                                ->limit(24)
-                                ->get();
-        }
-        else
-        {
-            $time_weather = DB::table('forecast_days')
-                                ->where('name_city', $city)
-                                ->orderBy('date', 'ASC')
-                                ->get();
-        }
-                            
-        return response()->json([
-            ["map" => $time_weather],
-            ["option" => $option]
-        ]);
+        $time_weather_hour = DB::table('forecast_days')
+                            ->join('hours', 'forecast_days.id', '=', 'hours.id_forecast')
+                            ->select('forecast_days.name_city', 'forecast_days.date', 'hours.*')
+                            ->where([['forecast_days.name_city', $city],['forecast_days.date', $date]])
+                            ->orderBy('hours.id_forecast', 'DESC')
+                            ->orderBy('hours.id', 'ASC')
+                            ->limit(24)
+                            ->get();             
+
+        return response()->json($time_weather_hour);
+    }
+
+    // map day
+    public function map_day($city)
+    {
+        $time_weather_day = DB::table('forecast_days')
+        ->where('name_city', $city)
+        ->orderBy('date', 'ASC')
+        ->get();
+
+        return response()->json($time_weather_day);
     }
 
     // find id modal day

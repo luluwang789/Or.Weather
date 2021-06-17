@@ -36,7 +36,8 @@ Route::get('/find/current/{id}', 'App\Http\Controllers\Admin\PageAdminController
 
 
 // search dashboard
-Route::get('/map/{option}/{city}/{date}', 'App\Http\Controllers\Admin\PageAdminController@map')->name('admin.page.map');
+Route::get('/map-hour/{city}/{date}', 'App\Http\Controllers\Admin\PageAdminController@map_hour')->name('admin.page.map-hour');
+Route::get('/map-day/{city}', 'App\Http\Controllers\Admin\PageAdminController@map_day')->name('admin.page.map-day');
 
 // account
 Route::get('/account-setting', 'App\Http\Controllers\Admin\PageAdminController@profile_setting')->name('admin.account-setting');

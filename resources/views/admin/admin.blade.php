@@ -181,111 +181,93 @@
             var option = $("#Option").val();
             var city = $("#City").val();
             var date = $("#Date").val();
-            var temp = []; // tmep_c
-            var hour = []; // label
-            $.ajax({
-                type: "GET",
-                url: "http://localhost:81/weather/admin/map/"+option+"/"+city+"/"+date,
-                dataType: "JSON",
-                success: function (data) {
-                    
-                    console.log(data[0].map);
+            
 
-                    if(option == 'hour')
-                    {
-                        for(var i = 0; i < data[0].map.length; i++){
-                            temp.push(data[0].map[i].temp_c);
-                            hour.push(new Date(data[0].map[i].time).getHours());
+            if(option == 'hour')
+            {
+                $.ajax({
+                    type: "GET",
+                    url: "http://localhost:81/weather/admin/map-hour/"+city+"/"+date,
+                    dataType: "JSON",
+                    success: function (data) { 
+                        console.log(data);
+
+                        var value = []; // temp_c
+                        var label = []; // time
+
+                        for(var i=0; i<data.length; i++)
+                        {
+                            value.push(data[i].temp_c);
+
+                            var hour = new Date(data[i].time);
+                            var HH = hour.getHours();
+                            var mm = hour.getMinutes();
+
+                            HH = HH < 10 ? '0' + HH : HH;
+                            mm = mm < 10 ? '0' + mm : mm;
+                            label.push(HH+":"+mm);
                         }
-                    }
-                    else
-                    {
-                        for(var i = 0; i < data[0].map.length; i++){
-                            temp.push(data[0].map[i].day_avgtemp_c);
 
-                            var date = new Date(data[0].map[i].date);
+                        var ctx = document.getElementById( "team-chart" );
+                        var newChart = new Chart(ctx, {
+                            type: 'line',
+                            data:{
+                                labels: label,
+                                type: 'line',
+                                defaultFontFamily: 'Montserrat',
+                                datasets: [{
+                                    data: value,
+                                    label: "Biểu đồ nhiệt độ (°C) theo giờ trong ngày tại "+city,
+                                },]
+                            }
+                        });
+
+                        newChart.render();
+                    }
+                });
+            }
+            else
+            {
+                $.ajax({
+                    type: "GET",
+                    url: "http://localhost:81/weather/admin/map-day/"+city,
+                    dataType: "JSON",
+                    success: function (data) { 
+                        console.log(data);
+
+                        var value = []; // temp_c
+                        var label = []; // time
+
+                        for(var i=0; i<data.length; i++)
+                        {
+                            value.push(data[i].day_avgtemp_c);
+
+                            var date = new Date(data[i].date);
                             var dd = String(date.getDate()).padStart(2, '0');
                             var mm = String(date.getMonth() + 1).padStart(2, '0'); //January is 0!
                             var yyyy = date.getFullYear();
-                            hour.push(mm + '/' + dd + '/' + yyyy);
+                            label.push(mm + '/' + dd + '/' + yyyy);
                         }
-                    }
-                    var ctx = document.getElementById( "team-chart" );
-                    // ctx.refresh();
-                    // ctx.height = 150;
-                    // location.reload();
-                    
-                    var myChart = new Chart( ctx, {
-                        type: 'line',
-                        data: {
-                            labels: hour,
+
+                        var ctx = document.getElementById( "team-chart" );
+                        var newChart = new Chart(ctx, {
                             type: 'line',
-                            defaultFontFamily: 'Montserrat',
-                            datasets: [ {
-                                data: temp,
-                                label: "Biểu đồ nhiệt độ (°C) theo " + option,
-                                backgroundColor: 'rgba(0,103,255,.15)',
-                                borderColor: 'rgba(0,103,255,0.5)',
-                                borderWidth: 3.5,
-                                pointStyle: 'circle',
-                                pointRadius: 5,
-                                pointBorderColor: 'transparent',
-                                pointBackgroundColor: 'rgba(0,103,255,0.5)',
-                                    }, ]
-                        },
-                        options: {
-                            responsive: true,
-                            tooltips: {
-                                mode: 'index',
-                                titleFontSize: 12,
-                                titleFontColor: '#000',
-                                bodyFontColor: '#000',
-                                backgroundColor: '#fff',
-                                titleFontFamily: 'Montserrat',
-                                bodyFontFamily: 'Montserrat',
-                                cornerRadius: 3,
-                                intersect: false,
-                            },
-                            legend: {
-                                display: true,
-                                position: 'top',
-                                labels: {
-                                    usePointStyle: true,
-                                    fontFamily: 'Montserrat',
-                                },
+                            data:{
+                                labels: label,
+                                type: 'line',
+                                defaultFontFamily: 'Montserrat',
+                                datasets: [{
+                                    data: value,
+                                    label: "Biểu đồ nhiệt độ (°C) theo lịch sử ngày tại "+city,
+                                },]
+                            }
+                        });
 
-
-                            },
-                            scales: {
-                                xAxes: [ {
-                                    display: true,
-                                    gridLines: {
-                                        display: true,
-                                        drawBorder: true
-                                    },
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: 'Thời gian (' + option + ')'
-                                    }
-                                        } ],
-                                yAxes: [ {
-                                    display: true,
-                                    gridLines: {
-                                        display: true,
-                                        drawBorder: true
-                                    },
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: 'Nhiệt độ (°C)'
-                                    }
-                                        } ]
-                            },
-                        }
-                    } );
-                    
-                    myChart.render();
-                }
-            });
+                        newChart.render();
+                    }
+                });
+            }
+            
             
         });
     </script>
