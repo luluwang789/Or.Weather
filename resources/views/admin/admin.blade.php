@@ -177,11 +177,26 @@
     </script>
     {{-- chart --}}
     <script>
-        $(document).on('click', '#btn-submit', function(){
+
+        var ctx = document.getElementById( "team-chart" );
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data:{
+                labels: [],
+                type: 'line',
+                defaultFontFamily: 'Montserrat',
+                datasets: [{
+                    data: [], 
+                    label: "Biểu đồ nhiệt độ (°C)",
+                },]
+            }
+        });
+
+        function updateChart()
+        {
             var option = $("#Option").val();
             var city = $("#City").val();
             var date = $("#Date").val();
-            
 
             if(option == 'hour')
             {
@@ -198,6 +213,7 @@
                         for(var i=0; i<data.length; i++)
                         {
                             value.push(data[i].temp_c);
+                            
 
                             var hour = new Date(data[i].time);
                             var HH = hour.getHours();
@@ -207,22 +223,11 @@
                             mm = mm < 10 ? '0' + mm : mm;
                             label.push(HH+":"+mm);
                         }
-
-                        var ctx = document.getElementById( "team-chart" );
-                        var newChart = new Chart(ctx, {
-                            type: 'line',
-                            data:{
-                                labels: label,
-                                type: 'line',
-                                defaultFontFamily: 'Montserrat',
-                                datasets: [{
-                                    data: value,
-                                    label: "Biểu đồ nhiệt độ (°C) theo giờ trong ngày tại "+city,
-                                },]
-                            }
-                        });
-
-                        newChart.render();
+                        
+                        myChart.data.labels = label;
+                        myChart.data.datasets[0].data = value;
+                        myChart.data.datasets[0].label = "Biểu đồ nhiệt độ (°C) theo giờ trong ngày tại "+city;
+                        myChart.update();
                     }
                 });
             }
@@ -249,27 +254,14 @@
                             label.push(mm + '/' + dd + '/' + yyyy);
                         }
 
-                        var ctx = document.getElementById( "team-chart" );
-                        var newChart = new Chart(ctx, {
-                            type: 'line',
-                            data:{
-                                labels: label,
-                                type: 'line',
-                                defaultFontFamily: 'Montserrat',
-                                datasets: [{
-                                    data: value,
-                                    label: "Biểu đồ nhiệt độ (°C) theo lịch sử ngày tại "+city,
-                                },]
-                            }
-                        });
-
-                        newChart.render();
+                        myChart.data.labels = label;
+                        myChart.data.datasets[0].data = value;
+                        myChart.data.datasets[0].label = "Biểu đồ nhiệt độ (°C) theo lịch sử ngày tại "+city;
+                        myChart.update();
                     }
                 });
             }
-            
-            
-        });
+        }
     </script>
     {{-- model-day --}}
     <script type="text/javascript">

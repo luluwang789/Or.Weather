@@ -68,7 +68,7 @@
                                     <input type="date" name="weatherDate" id="Date" class="form-control form-control-sm">
                                 </div>
                                 <div class="btn-group mr-2" aria-label="First group">
-                                    <button type="button" class="btn btn-primary btn-sm" id="btn-submit">Thống kê</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="btn-submit" onclick="updateChart()">Thống kê</button>
                                 </div>
                             </form>
                         </div>
