@@ -46,13 +46,16 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 			<div class="w3layouts_main_grid">
 				<div class="w3layouts_main_grid_left">
 					@if ($current_default != null)
-					<h2>{{ $current_default->name_city }}</h2>
+					<h2>{{ $current_default->name_city }}, Viet Nam</h2>
 
 					<p>{{ $current_default->condition_text }}</p>
 
 					<h3>Nhiệt độ hiện tại</h3>
 
 					<h4>{{ $current_default->temp_c }}<span>°C</span></h4>
+					<p style="color: white;"><strong>Cập nhật lần cuối:</strong>
+						<br>{{ $current_default->last_updated }}
+					</p>
 					@endif
 				</div>
 				<div class="w3layouts_main_grid_right">
