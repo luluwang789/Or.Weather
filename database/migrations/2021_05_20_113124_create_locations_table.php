@@ -15,6 +15,7 @@ class CreateLocationsTable extends Migration
     // chiếu qua bảng forecast (1 - 1)
     public function up()
     {
+        // Tên các thành phố Việt Nam
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->nullable()->default('text');

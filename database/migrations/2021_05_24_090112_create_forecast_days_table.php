@@ -15,6 +15,7 @@ class CreateForecastDaysTable extends Migration
     // chiếu qua bảng hour (1 - n)
     public function up()
     {
+        // Lấy thời tiết trung bình trong ngày
         Schema::create('forecast_days', function (Blueprint $table) {
             $table->increments('id')->start(100);
             $table->string('name_city', 100)->nullable()->default('text');

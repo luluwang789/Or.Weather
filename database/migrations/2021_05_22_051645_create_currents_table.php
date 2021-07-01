@@ -14,6 +14,7 @@ class CreateCurrentsTable extends Migration
     // chiếu qua bảng location (1 - 1)
     public function up()
     {
+        // Lấy thời tiết hiện tại của thành phố đang tìm kiếm
         Schema::create('currents', function (Blueprint $table) {
             $table->increments('id')->start(10000);
             $table->string('name_city', 100)->nullable()->default('text');

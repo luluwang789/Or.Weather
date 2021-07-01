@@ -14,6 +14,7 @@ class CreateHoursTable extends Migration
     // chiếu qua bảng forecast (n - 1): 1 forecast thì có n(24) hours 
     public function up()
     {
+        // Nhiệt dộ theo giờ trong ngày
         Schema::create('hours', function (Blueprint $table) {
             $table->increments('id')->start(100);;
             $table->integer('id_forecast')->unsigned()->nullable()->default(12); 

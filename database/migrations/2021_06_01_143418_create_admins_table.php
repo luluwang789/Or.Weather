@@ -13,6 +13,7 @@ class CreateAdminsTable extends Migration
      */
     public function up()
     {
+        // Lưu tài khoản đăng nhập
         Schema::create('admins', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 100)->nullable()->default('text');
